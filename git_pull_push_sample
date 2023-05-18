@@ -1,0 +1,63 @@
+#import os 
+#import shutil
+#import git 
+
+#shutil.rmtree('demo-https')
+#git.Repo.clone_from('https://github.com/cloud-dev-user/demo-app.git', 'demo-httpsd')
+
+#print(os.listdir(os.getcwd()))
+
+
+from git import Repo
+import os
+
+def clone_create_local_branch(repo_url, remote_branch, local_branch, file_name, file_content):
+    #repo_dir = 'demo_directory'
+    repo_dir = 'C:\\Users\\u_rav\\python_scripting\\demo_directory'
+    # Check if repository directory already exists
+    if os.path.isdir(repo_dir):
+        print(f"Repository already exists in {repo_dir}.")
+        repo = Repo(repo_dir)
+    else:
+        # Clone the repository
+        repo = Repo.clone_from(repo_url, repo_dir)
+        print(f"Successfully cloned {repo_url} into {repo_dir}.")
+
+    # Check if local branch already exists
+    branch_exists = False
+    for branch in repo.branches:
+        if branch.name == local_branch:
+            branch_exists = True
+            break
+
+    if not branch_exists:
+        # Create a new local branch from the remote branch
+        repo.git.checkout('-b', local_branch, f'origin/{remote_branch}')
+        print(f"Created local branch {local_branch} from remote branch {remote_branch}.")
+    else:
+        # Checkout the existing local branch
+        repo.git.checkout(local_branch)
+        print(f"Checked out existing local branch {local_branch}.")
+
+    # Create a new file and add it to the repository
+    file_path = os.path.join(repo_dir, file_name)
+    with open(file_path, 'w') as file:
+        file.write(file_content)
+    repo.index.add([file_path])
+
+    # Commit and push the local branch
+    repo.index.commit('Added new file')
+    origin = repo.remote(name='origin')
+    origin.push(local_branch)
+
+    print(f"Created and pushed {file_name} to the remote branch {local_branch}!")
+
+
+# Example usage
+repo_url = 'https://github.com/cloud-dev-user/demo-app.git'
+remote_branch = 'feature/signin'
+local_branch = 'feature/signin1.0'
+file_name = 'new_file.txt'
+file_content = 'This is a new file.'
+
+clone_create_local_branch(repo_url, remote_branch, local_branch, file_name, file_content)
